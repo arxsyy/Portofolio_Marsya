@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import "./style.css";
 
@@ -32,18 +32,256 @@ const projects = [
   },
 ];
 
-const experiences = [
+const experienceCards = [
   {
-    period: "2022 — 2025",
-    role: "Event Volunteer",
-    organization: "Livearena.id",
-    description:
-      "Terlibat sebagai volunteer dalam beberapa kegiatan olahraga, termasuk Walikota Cup 2022, Piala GABSI Kota Malang 2023, ASEAN University Games 2024, dan PORPROV Jawa Timur IX 2025.",
+    cardLabel: "Pengalaman",
+    slides: [
+      {
+        image: null,
+        type: "Internasional",
+        period: "2024",
+        title: "ASEAN University Games 2024",
+        subtitle: "Livearena.id",
+        description:
+          "Berperan sebagai volunteer pada ajang olahraga tingkat ASEAN antar mahasiswa, ASEAN University Games 2024.",
+      },
+      {
+        image: null,
+        type: "Olahraga Regional",
+        period: "2025",
+        title: "PORPROV Jawa Timur IX 2025",
+        subtitle: "Livearena.id",
+        description:
+          "Terlibat sebagai volunteer dalam Pekan Olahraga Provinsi Jawa Timur IX 2025, mendukung penyelenggaraan berbagai cabang olahraga.",
+      },
+      {
+        image: null,
+        type: "Olahraga",
+        period: "2022",
+        title: "Walikota Cup 2022",
+        subtitle: "Livearena.id",
+        description:
+          "Bertugas sebagai volunteer dalam penyelenggaraan Walikota Cup 2022, mendukung kelancaran kegiatan olahraga di Kota Malang.",
+      },
+      {
+        image: null,
+        type: "Olahraga",
+        period: "2023",
+        title: "Piala GABSI Kota Malang 2023",
+        subtitle: "Livearena.id",
+        description:
+          "Terlibat aktif sebagai volunteer dalam penyelenggaraan Piala GABSI Kota Malang 2023.",
+      },
+    ],
+  },
+  {
+    cardLabel: "Hobi & Minat",
+    slides: [
+      {
+        image: null,
+        type: "Musik",
+        period: "Sejak kecil",
+        title: "Mendengarkan Musik",
+        subtitle: "Hiburan & Inspirasi",
+        description:
+          "Musik menemani hampir setiap aktivitas — dari belajar, mengerjakan proyek, hingga sekadar bersantai. Genre favorit bervariasi tergantung suasana hati.",
+      },
+      {
+        image: null,
+        type: "Seni Visual",
+        period: "Hobi aktif",
+        title: "Desain & Estetika",
+        subtitle: "UI / Konten Visual",
+        description:
+          "Tertarik pada hal-hal yang enak dilihat — dari tata letak antarmuka, pemilihan warna, hingga komposisi visual sederhana.",
+      },
+      {
+        image: null,
+        type: "Eksplorasi",
+        period: "Rutin",
+        title: "Belajar Hal Baru",
+        subtitle: "Teknologi & Pengetahuan",
+        description:
+          "Senang mengeksplorasi topik baru — baik yang berkaitan dengan teknologi, produktivitas, maupun hal-hal di luar bidang studi.",
+      },
+    ],
   },
 ];
 
 function Arrow() {
   return <span aria-hidden="true">↗</span>;
+}
+
+function GalleryCard({ cardLabel, slides }) {
+  const total = slides.length;
+  // Clone: [last, ...slides, first] for seamless looping
+  const looped = [slides[total - 1], ...slides, slides[0]];
+  const [current, setCurrent] = useState(1); // start at index 1 (first real slide)
+  const [lightbox, setLightbox] = useState(false);
+  const trackRef = useRef(null);
+  const isScrolling = useRef(false);
+  const scrollTimer = useRef(null);
+
+  // Real slide index (strips clone offset)
+  const realIndex = current === 0 ? total - 1 : current === looped.length - 1 ? 0 : current - 1;
+  const slide = slides[realIndex];
+
+  const scrollToIndex = (index, smooth = true) => {
+    const track = trackRef.current;
+    if (!track) return;
+    track.scrollTo({ left: index * track.offsetWidth, behavior: smooth ? "smooth" : "instant" });
+  };
+
+  const goTo = (index) => {
+    if (isScrolling.current) return;
+    isScrolling.current = true;
+    scrollToIndex(index);
+    setCurrent(index);
+    clearTimeout(scrollTimer.current);
+    scrollTimer.current = setTimeout(() => {
+      isScrolling.current = false;
+      // After reaching clone, silently jump to real slide
+      const track = trackRef.current;
+      if (!track) return;
+      if (index === 0) {
+        // jumped to clone of last → snap to real last
+        track.scrollTo({ left: total * track.offsetWidth, behavior: "instant" });
+        setCurrent(total);
+      } else if (index === looped.length - 1) {
+        // jumped to clone of first → snap to real first
+        track.scrollTo({ left: 1 * track.offsetWidth, behavior: "instant" });
+        setCurrent(1);
+      }
+    }, 400);
+  };
+
+  const prev = () => goTo(current - 1 < 0 ? 0 : current - 1);
+  const next = () => goTo(current + 1 >= looped.length ? looped.length - 1 : current + 1);
+
+  // Scroll to initial position on mount (no animation)
+  React.useEffect(() => {
+    const track = trackRef.current;
+    if (track) track.scrollTo({ left: 1 * track.offsetWidth, behavior: "instant" });
+  }, []);
+
+  // Close lightbox on Escape
+  React.useEffect(() => {
+    const onKey = (e) => { if (e.key === "Escape") setLightbox(false); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  return (
+    <>
+      <div className="gallery-card">
+        {/* Image swipe area */}
+        <div className="gallery-card-top">
+          <div className="gallery-track" ref={trackRef}>
+            {looped.map((s, i) => (
+              <div className="gallery-slide" key={i}>
+                {s.image ? (
+                  <img src={s.image} alt={s.title} />
+                ) : (
+                  <div className="gallery-placeholder">
+                    <span>✳</span>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Expand button — always visible */}
+          <button
+            className="gallery-expand-btn"
+            onClick={() => setLightbox(true)}
+            aria-label="Perbesar foto"
+            title="Perbesar foto"
+          >
+            ⤢
+          </button>
+
+          <span className="gallery-type-badge">{slide.type}</span>
+
+          {/* Prev / Next — infinite loop, always enabled */}
+          {slides.length > 1 && (
+            <>
+              <button
+                className="gallery-nav-btn gallery-nav-prev"
+                onClick={prev}
+                aria-label="Sebelumnya"
+              >
+                ‹
+              </button>
+              <button
+                className="gallery-nav-btn gallery-nav-next"
+                onClick={next}
+                aria-label="Berikutnya"
+              >
+                ›
+              </button>
+            </>
+          )}
+
+          {slides.length > 1 && (
+            <div className="gallery-dots-overlay">
+              {slides.map((_, i) => (
+                <button
+                  key={i}
+                  className={`gallery-dot${i === realIndex ? " active" : ""}`}
+                  onClick={() => goTo(i + 1)}
+                  aria-label={`Slide ${i + 1}`}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Info area — changes per slide */}
+        <div className="gallery-card-body">
+          <p className="gallery-card-label">{cardLabel}</p>
+          <p className="gallery-period">{slide.period}</p>
+          <h3 className="gallery-title">{slide.title}</h3>
+          <p className="experience-org">{slide.subtitle}</p>
+          <p className="exp-card-desc">{slide.description}</p>
+        </div>
+      </div>
+
+      {/* Lightbox */}
+      {lightbox && (
+        <div
+          className="lightbox-overlay"
+          onClick={() => setLightbox(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Foto diperbesar"
+        >
+          <button
+            className="lightbox-close"
+            onClick={() => setLightbox(false)}
+            aria-label="Tutup"
+          >
+            ✕
+          </button>
+          <div
+            className="lightbox-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {slide.image ? (
+              <img src={slide.image} alt={slide.title} />
+            ) : (
+              <div className="lightbox-no-img">
+                <span>✳</span>
+                <p>Belum ada foto untuk ditampilkan</p>
+              </div>
+            )}
+            <p className="lightbox-caption">
+              <strong>{slide.title}</strong> · {slide.subtitle}
+            </p>
+          </div>
+        </div>
+      )}
+    </>
+  );
 }
 
 function App() {
@@ -228,16 +466,13 @@ function App() {
               <em>pengalaman.</em>
             </h2>
           </div>
-          <div className="experience-list">
-            {experiences.map((item) => (
-              <article className="experience-item" key={item.role}>
-                <p className="experience-period">{item.period}</p>
-                <div>
-                  <h3>{item.role}</h3>
-                  <p className="experience-org">{item.organization}</p>
-                  <p>{item.description}</p>
-                </div>
-              </article>
+          <div className="gallery-cards-grid">
+            {experienceCards.map((card) => (
+              <GalleryCard
+                key={card.cardLabel}
+                cardLabel={card.cardLabel}
+                slides={card.slides}
+              />
             ))}
           </div>
         </section>

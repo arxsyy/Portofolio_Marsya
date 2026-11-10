@@ -90,7 +90,213 @@ h1 em { font-size: .91em; }
 .experience-list { border-top: 1px solid var(--line); }
 .experience-item { display: grid; grid-template-columns: 130px 1fr; gap: 25px; padding: 24px 0; border-bottom: 1px solid var(--line); }
 .experience-item h3 { margin-top: 0; }
-.experience-org { margin: 0; color: var(--brown); font-size: 12px; }
+.experience-org { margin: 0 0 10px; color: var(--brown); font-size: 12px; font-family: var(--font-small); }
+
+/* Gallery Cards */
+.gallery-cards-grid {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+.gallery-card {
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: rgba(255,255,255,.48);
+  overflow: hidden;
+}
+.gallery-card-top {
+  position: relative;
+  height: 220px;
+  overflow: hidden;
+}
+.gallery-track {
+  display: flex;
+  height: 100%;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.gallery-track::-webkit-scrollbar { display: none; }
+.gallery-slide {
+  flex: 0 0 100%;
+  scroll-snap-align: start;
+  height: 100%;
+  background: linear-gradient(135deg, #F0DBC5, #F8F2EF);
+  overflow: hidden;
+}
+.gallery-slide img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.gallery-placeholder {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  color: rgba(80,57,42,.25); font-size: 54px;
+}
+.gallery-type-badge {
+  position: absolute;
+  top: 12px; left: 12px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.8);
+  backdrop-filter: blur(8px);
+  font-family: var(--font-small);
+  font-size: 10px;
+  color: var(--ink);
+  pointer-events: none;
+}
+.gallery-dots-overlay {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 5px;
+}
+.gallery-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,.5);
+  cursor: pointer;
+  padding: 0;
+  transition: background .2s, transform .2s;
+}
+.gallery-dot.active { background: #fff; transform: scale(1.4); }
+.gallery-card-body { padding: 18px 22px 24px; }
+.gallery-card-label {
+  font-family: var(--font-small);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--brown);
+  margin: 0 0 8px;
+}
+.gallery-period {
+  font-family: var(--font-small);
+  font-size: 10px;
+  color: var(--muted);
+  margin: 0 0 4px;
+  letter-spacing: .06em;
+}
+.gallery-title {
+  margin: 0 0 2px;
+  font-size: 20px;
+  letter-spacing: -.04em;
+}
+.exp-card-desc { color: #756B63; font-size: 13px; line-height: 1.75; margin: 8px 0 0; }
+
+/* Prev / Next nav buttons on gallery card */
+.gallery-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,.8);
+  backdrop-filter: blur(8px);
+  color: var(--ink);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .2s, opacity .2s;
+  z-index: 2;
+}
+.gallery-nav-btn:disabled { opacity: .25; cursor: default; }
+.gallery-nav-btn:not(:disabled):hover { background: #fff; }
+.gallery-nav-prev { left: 10px; }
+.gallery-nav-next { right: 10px; }
+
+/* Expand button */
+.gallery-expand-btn {  position: absolute;
+  top: 10px; right: 10px;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,.8);
+  backdrop-filter: blur(8px);
+  color: var(--ink);
+  font-size: 15px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .2s, transform .15s;
+  z-index: 2;
+  line-height: 1;
+}
+.gallery-expand-btn:hover { background: #fff; transform: scale(1.1); }
+
+/* Lightbox */
+.lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(20, 14, 10, .88);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: lb-in .2s ease;
+  cursor: pointer;
+}
+@keyframes lb-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.lightbox-content {
+  max-width: min(90vw, 860px);
+  cursor: default;
+  animation: lb-scale .22s ease;
+}
+@keyframes lb-scale {
+  from { transform: scale(.93); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+.lightbox-content img {
+  display: block;
+  width: 100%;
+  max-height: 80vh;
+  object-fit: contain;
+  border-radius: 14px;
+}
+.lightbox-caption {
+  margin: 12px 0 0;
+  color: rgba(255,255,255,.75);
+  font-size: 13px;
+  text-align: center;
+}
+.lightbox-close {
+  position: fixed;
+  top: 20px; right: 24px;
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,.2);
+  background: rgba(255,255,255,.1);
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .2s;
+}
+.lightbox-close:hover { background: rgba(255,255,255,.25); }
+.lightbox-no-img {
+  width: min(80vw, 400px);
+  height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: rgba(255,255,255,.07);
+  border-radius: 14px;
+  color: rgba(255,255,255,.5);
+  font-size: 54px;
+}
+.lightbox-no-img p {
+  font-size: 13px;
+  margin: 0;
+  color: rgba(255,255,255,.4);
+}
 .contact { padding-top: 110px; padding-bottom: 110px; text-align: center; border-top: 1px solid var(--line); }
 .contact h2 { font-size: clamp(42px, 6vw, 70px); }
 .contact-copy { margin: 22px auto; color: var(--muted); font-size: 14px; }
@@ -113,6 +319,7 @@ h1 em { font-size: .91em; }
   .section-heading-row { align-items: start; }
   .project-grid { grid-template-columns: 1fr; }
   .experience-item { grid-template-columns: 1fr; gap: 8px; }
+  .gallery-cards-grid { grid-template-columns: 1fr; }
   .site-footer { width: calc(100% - 36px); flex-wrap: wrap; padding: 22px 0; }
 }
 @media (max-width: 420px) {
